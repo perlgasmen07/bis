@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <link rel="stylesheet" href="/static/css/login.css">
+</head>
+<body>
+<div class="cover">
+    <div class="cover-container">
+        <div class="container">
+            {% if request.user.is_authenticated %}
+            <div>
+                <p>Hi {{ request.user.first_name }} 🙂</p>
+                <p>Your email is {{ request.user.email }}</p>
+                <p>Click here to <a href="{% url 'sign_out' %}">Sign out</a></p>
+            </div>
+            {% else %}
+            <div>
+                <p>Hi there 🙂 </p>
+                <p>Click below to sign in with Google</p>
+                <div id="g_id_onload"
+                    data-client_id="417967994596-hel022vp2k6l3dspqauk38866fip5hsb.apps.googleusercontent.com"
+                    data-context="signin"
+                    data-ux_mode="popup"
+                    data-login_uri="http://localhost:8000/auth-receiver"
+                    data-itp_support="true">
+                </div>
+        
+                <div class="g_id_signin"
+                    data-type="standard"
+                    data-shape="pill"
+                    data-theme="outline"
+                    data-text="signin_with"
+                    data-size="large"
+                    data-logo_alignment="left">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</body>
+</html>

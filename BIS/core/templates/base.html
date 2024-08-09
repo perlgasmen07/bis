@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base</title>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <link rel="stylesheet" href="/static/css/login.css">
+</head>
+<body>
+    <div class="cover">
+        <div class="cover-container">
+            <div class="container">
+                {% if request.user.is_authenticated %}
+                <div>
+                    <p>Welcome {{ request.user.first_name }} 🙂</p>
+                    <p>Your email is {{ request.user.email }}</p>
+                    <p>Click here to <a href="{% url 'sign_out' %}">Sign out</a></p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="container"> 
+                {% for user in users %}
+                    {% if user.role_id == 1 %}
+                        <li>{{ user.role }} {{ user.first_name }}</li>
+                    {% endif %}
+                    {% if user.role_id == 2 %}
+                        <li>{{ user.role }} {{ user.first_name }}</li>
+                    {% endif %}
+                    {% if user.role_id == 3 %}
+                        <li>{{ user.role }} {{ user.first_name }}</li>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
