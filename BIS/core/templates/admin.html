@@ -3,9 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Sysadmin</title>
+    <style>
+        .toggle { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; }
+        .toggle:hover { color: red; cursor: pointer; }
+        .content { display: none; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table, th, td { border: 1px solid #ccc; }
+        th, td { padding: 8px; text-align: left; }
+    </style>
 </head>
 <body>
-    
+    <h1>Sysadmin</h1>
+    <div class="toggles">
+        <div class="toggle" id="user-toggle">
+            <h2>Users</h2>
+            <div id="user-content" class="content"></div>
+        </div>
+        <div class="toggle" id="college-toggle">
+            <h2>Colleges</h2>
+            <div id="college-content" class="content"></div>
+        </div>
+        <div class="toggle" id="building-toggle">
+            <h2>Buildings</h2>
+            <div id="building-content" class="content"></div>
+        </div>
+        <div class="toggle" id="attribute-toggle">
+            <h2>Attributes</h2>
+            <div id="attribute-content" class="content"></div>
+        </div>
+        <div class="toggle" id="property-toggle">
+            <h2>Properties</h2>
+            <div id="property-content" class="content"></div>
+        </div>
+        <div class="toggle" id="floor-toggle">
+            <h2>Floors</h2>
+            <div id="floor-content" class="content"></div>
+        </div>
+        <div class="toggle" id="room-toggle">
+            <h2>Rooms</h2>
+            <div id="room-content" class="content"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.toggle').click(function() {
+                let targetContent = $(this).find('.content');
+                let modelName = $(this).attr('id').replace('-toggle', '');
+                
+                if (targetContent.is(':visible')) {
+                    targetContent.slideUp();
+                } else {
+                    if (!targetContent.data('loaded')) {
+                        $.ajax({
+                            url: '/api/' + modelName + '/',
+                            method: 'GET',
+                            success: function(data) {
+                                let tableContent = '<table><thead><tr><th>ID</th><th>Shortname</th></tr></thead><tbody>';
+                                if (data.length === 0) {
+                                    tableContent += '<tr><td colspan="2">No data available</td></tr>';
+                                } else {
+                                    data.forEach(function(item) {
+                                        tableContent += '<tr><td>' + item.id + '</td><td>' + item.shortname + '</td></tr>';
+                                    });
+                                }
+                                tableContent += '</tbody></table>';
+                                targetContent.html(tableContent).data('loaded', true);
+                            },
+                            error: function(error) {
+                                console.log('Error:', error);
+                            }
+                        });
+                    }
+                    targetContent.slideDown();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

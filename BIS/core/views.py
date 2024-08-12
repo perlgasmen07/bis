@@ -7,8 +7,15 @@ from django.views.decorators.csrf import csrf_exempt
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.apps import apps
 
 from .models import User, Role
+from colleges.models import College
+from buildings.models import Building
+from floors.models import Floor, Room
+from attributes.models import Attribute, Property, AttributeHistory, BuildingAttribute, PropertyHistory
 #-----------------------------
 #------startUser login--------
 #-----------------------------
@@ -46,8 +53,8 @@ def auth_receiver(request):
         user.save()
     
     auth_login(request, user)
-
-    if user.role == "System Administrator":
+    sysadmin_role =get_object_or_404(Role, name="System Administrator")
+    if user.role == sysadmin_role:
         return redirect('sysadmin')
     else:
         return redirect('home')
@@ -71,6 +78,85 @@ def sign_out(request):
 #-----------------------------
 def sysadmin(request):
     return render(request, 'admin.html')
+
+
+def get_model(request, model_name):
+    MODEL_MAP = {
+        'user': 'core.User',
+        'college': 'colleges.College',
+        'building': 'buildings.Building',
+        'floor': 'floors.Floor',
+        'room': 'floors.Room',
+        'attribute': 'attributes.Attribute',
+        'property': 'attributes.Property',
+    }
+
+    if model_name in MODEL_MAP:
+        model = apps.get_model(MODEL_MAP[model_name])
+        
+        # Customize the fields returned based on the model
+        if model_name == 'user':
+            data = model.objects.all().values('id', 'first_name')
+            for item in data:
+                item['shortname'] = item.pop('first_name')
+        # elif model_name == 'attributes':
+        #    data = model.objects.annotate(building_value=F('buildingattribute__value')).values('id', 'building_value')
+        elif model_name == 'property':
+            data = model.objects.all().values('id', 'data')
+            for item in data:
+                if isinstance(item['data'], dict):
+                    # Extract the key name (e.g., 'longitude') instead of its value
+                    # keys = item['data'].keys()
+                    key_value_pair = [f"{key}: {value}" for key, value in item['data'].items()]
+                    item['shortname'] = ', '.join(key_value_pair) if key_value_pair else 'N/A'
+                else:
+                    item['shortname'] = 'N/A'
+        elif model_name == 'floor':
+            data = model.objects.all().values('id', 'level')
+            for item in data:
+                item['shortname'] = item.pop('level')
+        elif model_name == 'room':
+            data = model.objects.all().values('id', 'room_no')
+            for item in data:
+                item['shortname'] = item.pop('room_no')
+        else:
+            data = model.objects.all().values('id', 'shortname')
+
+        return JsonResponse(list(data), safe=False)
+
+    else:
+        return JsonResponse({'error': 'Invalid model name'}, status=400)
+
+# def get_users(request):
+#     users = User.objects.all().values('id','shortname')
+#     return JsonResponse(list(users), safe=False)
+
+# def get_user(request,user_id):
+#     user = User.objects.get(user_id)
+
+#     return JsonResponse(user, safe=False)
+
+# def get_colleges(request):
+#     colleges = College.objects.all().values('id', 'shortname')
+
+#     return JsonResponse(list(colleges), safe=False)
+
+# def get_college(request,college_id):
+#     college = User.objects.get(college_id)
+
+#     return JsonResponse(college, safe=False)
+
+# def get_buildings(request):
+#     buildings = Building.objects.all().values('id', 'shortname')
+
+#     return JsonResponse(list(buildings), safe=False)
+
+# def get_building(request, building_id):
+
+
+def edit_user(request, user_id):
+    user = User.objects.get(user_id)
+    return render(request)
 #-----------------------------
 #--------endAdmin views-------
 #-----------------------------
