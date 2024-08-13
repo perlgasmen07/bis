@@ -1,0 +1,127 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    background-image: url('/static/image/bg.jpg');
+    background-size: cover;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(216, 12, 12, 0.5);
+}
+
+.cover-container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
+    margin-top: 60px; /* Space for the fixed navbar */
+}
+
+.container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.admin_container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+#navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#navbar .navbuttons, #navbar .userbuttons {
+    display: flex;
+    align-items: center;
+}
+
+#navbar .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+#navbar .dropdown .name_role {
+    cursor: pointer;
+    padding: 10px;
+    background-color: #555;
+    border-radius: 5px, 50px, 100px, 5px;
+    color: white;
+    text-align: center;
+}
+
+#navbar .dropdown .dropdown_content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    padding: 12px 16px;
+    z-index: 1;
+}
+
+#navbar .dropdown:hover .dropdown_content {
+    display: block;
+}
+
+#navbar .dropdown_content p {
+    color: #333;
+    margin: 10px 0;
+}
+
+#navbar .dropdown_content a {
+    color: #007bff;
+    text-decoration: none;
+    display: block;
+    padding: 5px 0;
+}
+
+#navbar .dropdown_content a:hover {
+    text-decoration: underline;
+}
+
+img {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin-top: 10px;
+}
+
+p {
+    color: #333;
+    margin: 10px 0;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}

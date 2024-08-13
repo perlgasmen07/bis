@@ -1,86 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sysadmin</title>
-    <style>
-        .toggle { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; }
-        .toggle:hover { color: red; cursor: pointer; }
-        .content { display: none; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        table, th, td { border: 1px solid #ccc; }
-        th, td { padding: 8px; text-align: left; }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
 </head>
 <body>
-    <h1>Sysadmin</h1>
-    <div class="toggles">
-        <div class="toggle" id="user-toggle">
-            <h2>Users</h2>
-            <div id="user-content" class="content"></div>
+    {% block content %}
+    <div class="admin_container">
+        <h1>Sysadmin</h1>
+        <div class="row mb-4">
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="toggle p-3 border bg-light" id="user-toggle">
+                    <h2>Users</h2>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="toggle p-3 border bg-light" id="college-toggle">
+                    <h2>Colleges</h2>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="toggle p-3 border bg-light" id="building-toggle">
+                    <h2>Buildings</h2>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="toggle p-3 border bg-light" id="attribute-toggle">
+                    <h2>Attributes</h2>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="toggle p-3 border bg-light" id="property-toggle">
+                    <h2>Properties</h2>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="toggle p-3 border bg-light" id="floor-toggle">
+                    <h2>Floors</h2>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="toggle p-3 border bg-light" id="room-toggle">
+                    <h2>Rooms</h2>
+                </div>
+            </div>
         </div>
-        <div class="toggle" id="college-toggle">
-            <h2>Colleges</h2>
-            <div id="college-content" class="content"></div>
+
+        <div id="table-content-toggle">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Shortname</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="2">Select a category to view data</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="toggle" id="building-toggle">
-            <h2>Buildings</h2>
-            <div id="building-content" class="content"></div>
-        </div>
-        <div class="toggle" id="attribute-toggle">
-            <h2>Attributes</h2>
-            <div id="attribute-content" class="content"></div>
-        </div>
-        <div class="toggle" id="property-toggle">
-            <h2>Properties</h2>
-            <div id="property-content" class="content"></div>
-        </div>
-        <div class="toggle" id="floor-toggle">
-            <h2>Floors</h2>
-            <div id="floor-content" class="content"></div>
-        </div>
-        <div class="toggle" id="room-toggle">
-            <h2>Rooms</h2>
-            <div id="room-content" class="content"></div>
-        </div>
-    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
     <script>
         $(document).ready(function() {
             $('.toggle').click(function() {
-                let targetContent = $(this).find('.content');
                 let modelName = $(this).attr('id').replace('-toggle', '');
-                
-                if (targetContent.is(':visible')) {
-                    targetContent.slideUp();
-                } else {
-                    if (!targetContent.data('loaded')) {
-                        $.ajax({
-                            url: '/api/' + modelName + '/',
-                            method: 'GET',
-                            success: function(data) {
-                                let tableContent = '<table><thead><tr><th>ID</th><th>Shortname</th></tr></thead><tbody>';
-                                if (data.length === 0) {
-                                    tableContent += '<tr><td colspan="2">No data available</td></tr>';
-                                } else {
-                                    data.forEach(function(item) {
-                                        tableContent += '<tr><td>' + item.id + '</td><td>' + item.shortname + '</td></tr>';
-                                    });
-                                }
-                                tableContent += '</tbody></table>';
-                                targetContent.html(tableContent).data('loaded', true);
-                            },
-                            error: function(error) {
-                                console.log('Error:', error);
-                            }
+    
+                $.ajax({
+                    url: '/api/' + modelName + '/',
+                    method: 'GET',
+                    success: function(response) {
+                        console.log(response); // Log the response to see its structure
+                        
+                        const fields = response.fields;
+                        const data = response.data;
+    
+                        if (!fields || !data) {
+                            console.error("Fields or data is undefined");
+                            return;
+                        }
+    
+                        // Build the table headers dynamically
+                        let tableContent = '<table class="table table-bordered table-striped"><thead><tr>';
+                        fields.forEach(field => {
+                            tableContent += `<th>${field.replace('_', ' ').toUpperCase()}</th>`;
                         });
+                        tableContent += '</tr></thead><tbody>';
+                        
+                        // Build the table rows dynamically
+                        if (data.length === 0) {
+                            tableContent += '<tr><td colspan="' + fields.length + '">No data available</td></tr>';
+                        } else {
+                            data.forEach(function(item) {
+                                tableContent += '<tr>';
+                                fields.forEach(field => {
+                                    tableContent += `<td>${item[field] || ''}</td>`;
+                                });
+                                tableContent += '</tr>';
+                            });
+                        }
+                        tableContent += '</tbody></table>';
+                        $('#table-content-toggle').html(tableContent);
+                    },
+                    error: function(error) {
+                        console.log('Error:', error);
                     }
-                    targetContent.slideDown();
-                }
+                });
             });
         });
     </script>
+    
+    {% endblock content %}
 </body>
 </html>

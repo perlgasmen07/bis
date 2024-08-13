@@ -1,15 +1,17 @@
 # core/views.py
 import os
 from django.contrib.auth import authenticate, login as auth_login
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
+from django.urls import reverse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.apps import apps
+from .forms import UserForms
+from django.db.models import F
 
 from .models import User, Role
 from colleges.models import College
@@ -79,6 +81,9 @@ def sign_out(request):
 def sysadmin(request):
     return render(request, 'admin.html')
 
+    #-----------------------------
+    #------Generic Model view-------
+    #-----------------------------
 
 def get_model(request, model_name):
     MODEL_MAP = {
@@ -94,65 +99,63 @@ def get_model(request, model_name):
     if model_name in MODEL_MAP:
         model = apps.get_model(MODEL_MAP[model_name])
         
-        # Customize the fields returned based on the model
+        fields = []
+        data = []
+
         if model_name == 'user':
-            data = model.objects.all().values('id', 'first_name')
-            for item in data:
-                item['shortname'] = item.pop('first_name')
-        # elif model_name == 'attributes':
-        #    data = model.objects.annotate(building_value=F('buildingattribute__value')).values('id', 'building_value')
-        elif model_name == 'property':
-            data = model.objects.all().values('id', 'data')
-            for item in data:
-                if isinstance(item['data'], dict):
-                    # Extract the key name (e.g., 'longitude') instead of its value
-                    # keys = item['data'].keys()
-                    key_value_pair = [f"{key}: {value}" for key, value in item['data'].items()]
-                    item['shortname'] = ', '.join(key_value_pair) if key_value_pair else 'N/A'
-                else:
-                    item['shortname'] = 'N/A'
+            fields = ['id', 'first_name']
+            data = list(model.objects.values(*fields))
+        elif model_name == 'college':
+            fields = ['id', 'shortname', 'description']
+            data = list(model.objects.values(*fields))
+        elif model_name == 'building':
+            try:
+                fields = ['id', 'shortname', 'college_shortname', 'inserted_by']
+                data = list(model.objects.annotate(college_shortname=F('college__shortname')).values(*fields))
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=500)
         elif model_name == 'floor':
-            data = model.objects.all().values('id', 'level')
-            for item in data:
-                item['shortname'] = item.pop('level')
+            fields = ['id', 'level']
+            data = list(model.objects.values(*fields))
         elif model_name == 'room':
-            data = model.objects.all().values('id', 'room_no')
-            for item in data:
-                item['shortname'] = item.pop('room_no')
-        else:
-            data = model.objects.all().values('id', 'shortname')
+            fields = ['id', 'room_no']
+            data = list(model.objects.values(*fields))
+        elif model_name == 'attribute':
+            fields = ['id', 'shortname']
+            data = list(model.objects.values(*fields))
+        elif model_name == 'property':
+            fields = ['id', 'data']
+            data = list(model.objects.values(*fields))
 
-        return JsonResponse(list(data), safe=False)
-
+        return JsonResponse({'fields': fields, 'data': data}, safe=False)
     else:
         return JsonResponse({'error': 'Invalid model name'}, status=400)
+    
+    #-----------------------------
+    #------One Data Views-------
+    #-----------------------------
+def get_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user_data = {
+            'id': user.id,
+            'first_name': user.first_name,
+        }
+        return JsonResponse(user_data, safe=False)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
 
-# def get_users(request):
-#     users = User.objects.all().values('id','shortname')
-#     return JsonResponse(list(users), safe=False)
+def add_user(request):
+    addUsersForm = UserForms
 
-# def get_user(request,user_id):
-#     user = User.objects.get(user_id)
-
-#     return JsonResponse(user, safe=False)
-
-# def get_colleges(request):
-#     colleges = College.objects.all().values('id', 'shortname')
-
-#     return JsonResponse(list(colleges), safe=False)
-
-# def get_college(request,college_id):
-#     college = User.objects.get(college_id)
-
-#     return JsonResponse(college, safe=False)
-
-# def get_buildings(request):
-#     buildings = Building.objects.all().values('id', 'shortname')
-
-#     return JsonResponse(list(buildings), safe=False)
-
-# def get_building(request, building_id):
-
+    if request.method == "POST":
+        form = UserForms(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('sysadmin'))
+        else:
+            return render(request, 'user/addUser.html', {'addUsersForm':form, 'errors':form.errors})
+    return render(request, 'user/addUser.html', {'addUsersForm':addUsersForm})
 
 def edit_user(request, user_id):
     user = User.objects.get(user_id)
