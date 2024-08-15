@@ -115,8 +115,8 @@ def get_model(request, model_name):
             except Exception as e:
                 return JsonResponse({'error': str(e)}, status=500)
         elif model_name == 'floor':
-            fields = ['id', 'level']
-            data = list(model.objects.values(*fields))
+            fields = ['id', 'level', 'building_shortname']
+            data = list(model.objects.annotate(building_shortname=F('building__shortname')).values(*fields))
         elif model_name == 'room':
             fields = ['id', 'room_no']
             data = list(model.objects.values(*fields))
@@ -158,8 +158,19 @@ def add_user(request):
     return render(request, 'user/addUser.html', {'addUsersForm':addUsersForm})
 
 def edit_user(request, user_id):
-    user = User.objects.get(user_id)
-    return render(request)
+
+    addUsersForm = UserForms
+    try:
+        user = User.objects.get(id=user_id)
+        user_data = {
+            'id': user.id,
+            'first_name': user.first_name,
+            'role': user.role.name,
+            'is_active': user.is_active
+        }
+        return JsonResponse(user_data, safe=False)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
 #-----------------------------
 #--------endAdmin views-------
 #-----------------------------

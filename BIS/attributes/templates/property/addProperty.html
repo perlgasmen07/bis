@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Property</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    {% block content %}
+    <h2>Add Property</h2>
+    <form action="" method="POST">
+        {% csrf_token %}
+
+        {{ addPropertiesForm.as_p }}
+
+        <!-- Dynamic Key-Value Pairs -->
+        <div id="dynamic-keys">
+            <h3>Dynamic Keys</h3>
+        </div>
+        
+        <!-- Button to add more key-value pairs -->
+        <button type="button" id="add-key-button">Add Key</button>
+
+        <br><br>
+        <input type="submit" value="Add Property">
+    </form>
+    {% endblock content %}
+
+    <script>
+        $(document).ready(function() {
+            function loadAttributes(buildingId) {
+                $.ajax({
+                    url: `/api/building/${buildingId}`,
+                    success: function(response) {
+                        var attributes = response.attributes;
+                        $('#id_attribute').empty();
+                        $.each(attributes, function(index, attribute) {
+                            $('#id_attribute').append(new Option(attribute['attribute__shortname'], attribute.id));
+                        });
+                        $('#id_attribute').trigger('change');
+                    }
+                });
+            }
+    
+            function loadKeyOptions(attributeId) {
+                $.ajax({
+                    url: `/api/attribute/${attributeId}`,
+                    success: function(response) {
+                        var properties = response.properties;
+                        $('#dynamic-keys').empty();
+                        $.each(properties, function(key, value) {
+                            addKey(key, value);
+                        });
+                    }
+                });
+            }
+    
+            function newKey(key = '', value = '') {
+                var $container = $('#dynamic-keys');
+                var $newDiv = $('<div>').addClass('key-value-pair');
+    
+                var $keyInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_keys[]')
+                    .val(key)
+                    .attr('readonly', false);
+                $newDiv.append($keyInput);
+    
+                var $valueInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_values[]')
+                    .val(value);
+                $newDiv.append($valueInput);
+    
+                var $removeButton = $('<button>')
+                    .attr('type', 'button')
+                    .text('Remove')
+                    .on('click', function() {
+                        $newDiv.remove();
+                    });
+                $newDiv.append($removeButton);
+    
+                $container.append($newDiv);
+            }
+    
+            function addKey(key = '', value = '') {
+                var $container = $('#dynamic-keys');
+                var $newDiv = $('<div>').addClass('key-value-pair');
+    
+                var $keyInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_keys[]')
+                    .val(key)
+                    .attr('readonly', true);  // Existing keys are read-only
+                $newDiv.append($keyInput);
+    
+                var $valueInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_values[]')
+                    .val(value);
+                $newDiv.append($valueInput);
+    
+                var $removeButton = $('<button>')
+                    .attr('type', 'button')
+                    .text('Remove')
+                    .on('click', function() {
+                        $newDiv.remove();
+                    });
+                $newDiv.append($removeButton);
+    
+                $container.append($newDiv);
+            }
+    
+            // Load attributes when a building is selected
+            $('#id_building').on('change', function() {
+                var buildingId = $(this).val();
+                if (buildingId) {
+                    loadAttributes(buildingId);
+                }
+            });
+    
+            // Load keys when an attribute is selected
+            $('#id_attribute').on('change', function() {
+                var attributeId = $(this).val();
+                if (attributeId) {
+                    loadKeyOptions(attributeId);
+                }
+            });
+    
+            // Add key button click event
+            $('#add-key-button').on('click', function() {
+                newKey();  // Add empty key-value pair
+            });
+    
+            // Initial load of attributes and keys based on the selected building and attribute
+            var initialBuildingId = $('#id_building').val();
+            if (initialBuildingId) {
+                loadAttributes(initialBuildingId);
+            }
+        });
+    </script>
+</body>
+</html>

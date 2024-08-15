@@ -34,7 +34,20 @@ urlpatterns = [
     path('api/room/n/', floor_views.add_room, name='add_room'),
 
     #edit paths
-    path('api/user/e/<int:user_id>', views.edit_user, name='edit_user')
+    path('api/user/<int:user_id>/e/', views.edit_user, name='edit_user'),
+    path('api/college/<int:college_id>/e/', college_views.edit_college, name='edit_college'),
+    path('api/building/<int:building_id>/e/', building_views.edit_building, name='edit_building'),
+    path('api/attribute/<int:attribute_id>/e/', attribute_views.edit_attribute, name='edit_attribute'),
+    path('api/property/<int:property_id>/e/', attribute_views.edit_property, name='edit_property'),
+    path('api/floor/<int:floor_id>/e/', floor_views.edit_floor, name='edit_floor'),
+    path('api/room/<int:room_id>/e/', floor_views.edit_room, name='edit_room'),
+    #delete path
+    path('api/college/<int:college_id>/d/', college_views.delete_college, name='delete_college'),
+    path('api/building/<int:building_id>/d/', building_views.delete_building, name='delete_building'),
+    path('api/attribute/<int:attribute_id>/d/', attribute_views.delete_attribute, name='delete_attribute'),
+    path('api/property/<int:property_id>/d/', attribute_views.delete_property, name='delete_property'),
+    path('api/floor/<int:floor_id>/d/', floor_views.delete_floor, name='delete_floor'),
+     path('api/room/<int:room_id>/d/', floor_views.delete_room, name='delete_room'),
     #delete path
 ]
 

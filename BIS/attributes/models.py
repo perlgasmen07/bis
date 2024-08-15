@@ -16,6 +16,13 @@ class Attribute(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField()
     deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
+    if(type == 'static'):
+        def __str__(self):
+            return f'{self.shortname}'
+    else:
+        
+        def __str__(self):
+            return f'{self.shortname}'
 
 class BuildingAttribute(models.Model):
     building = models.ForeignKey(Building, on_delete=models.CASCADE)

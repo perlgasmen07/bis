@@ -6,11 +6,13 @@
     <title>Add Room</title>
 </head>
 <body>
+    {% block content %}
     <form action="" method="POST">
         {%csrf_token%}
 
         {{addRoomsForm.as_p}}
         <input type="submit" value="Add Flight">
     </form>
+    {% endblock content %}
 </body>
 </html>
