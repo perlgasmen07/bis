@@ -5,8 +5,7 @@ from .models import Building
 class BuildingForms(forms.ModelForm):
     class Meta:
         model = Building
-        exclude = ['inserted_by', 'is_deleted', 'deleted_by']
-        #fields = '__all__'
+        exclude = ['inserted_by', 'is_deleted', 'deleted_by', 'updated_by']
 
     def clean(self):
         cleaned_data = super().clean()

@@ -9,9 +9,9 @@ class Building(models.Model):
     college = models.ForeignKey(College, on_delete=models.SET_NULL, null=True, blank=True)
     inserted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')    
-    created_by = models.DateTimeField(auto_now_add=True)
-    updated_by = models.DateTimeField(auto_now=True)
-    is_deleted = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
 
     def __str__(self):

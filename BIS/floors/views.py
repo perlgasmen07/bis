@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from floors.models import Floor, Room
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.urls import reverse
@@ -34,7 +34,7 @@ def add_floor(request):
         form = FloorForms(request.POST)
         if form.is_valid():
             floor = form.save(commit=False)
-            floor.inserted_by = {{request.user.id}}
+            floor.inserted_by = request.user
             floor.is_deleted = False
             floor.save()
             return HttpResponseRedirect(reverse('sysadmin'))
@@ -57,33 +57,63 @@ def add_room(request):
     return render(request, 'room/addRoom.html', {'addRoomsForm':addRoomsForm})
 
 def edit_floor(request, floor_id):
-    try:
-        floor = Floor.objects.get(id=floor_id)
-        room_data = {
-            'id': floor.id,
-            'level': floor.level,
-            'building': floor.building_id,
-        }
-        return JsonResponse(room_data, safe=False)
-    except Floor.DoesNotExist:
-        return JsonResponse({'error': 'Room not found'}, status=404)
+    floor = get_object_or_404(Floor, id=floor_id)
+    if request.method == "POST":
+        form = FloorForms(request.POST, instance=floor)
+        if form.is_valid():
+            form.save()
+            return redirect('sysadmin')
+    else:
+        form = FloorForms(instance=floor)
+    return render(request, 'floor/editFloor.html', {'form': form})
 
 def edit_room(request, room_id):
-    try:
-        room = Room.objects.get(id=room_id)
-        room_data = {
-            'id': room.id,
-            'room_no': room.room_no,
-            'floor_id': room.floor_id,
-        }
-        return JsonResponse(room_data, safe=False)
-    except Room.DoesNotExist:
-        return JsonResponse({'error': 'Room not found'}, status=404)
+    room = get_object_or_404(Room, id=room_id)
+    if request.method == "POST":
+        form = RoomForms(request.POST, instance=room)
+        if form.is_valid():
+            form.save()
+            return redirect('sysadmin')
+    else:
+        form = RoomForms(instance=room)
+    return render(request, 'room/editRoom.html', {'form': form})
 
 def delete_floor(request, floor_id):
-    Floor.objects.filter(pk=floor_id).delete()
-    return HttpResponseRedirect(reverse('sysadmin'))
+    floor = get_object_or_404(Floor, id=floor_id)
+    floor.is_deleted = True
+    floor.save()
+
+    rooms = Room.objects.filter(floor=floor)
+    rooms.update(is_deleted=True)
+
+    return redirect('sysadmin')
+
+def recover_floor(request, floor_id):
+    floor = get_object_or_404(Floor, id=floor_id)
+    floor.is_deleted = False
+    floor.save()
+
+    #Recover rooms related
+    rooms = Room.objects.filter(floor=floor)
+    rooms.update(is_deleted=False)
+
+    return redirect('sysadmin')
 
 def delete_room(request, room_id):
-    Room.objects.filter(pk=room_id).delete()
-    return HttpResponseRedirect(reverse('sysadmin'))
+    room = get_object_or_404(Room, id=room_id)
+    room.is_deleted = True
+    room.save()
+    return redirect('sysadmin')
+
+def recover_room(request, room_id):
+    room = get_object_or_404(Room, id=room_id)
+
+    if room.floor and room.floor.is_deleted:
+        return JsonResponse({'error': 'Cannot recover room because the associated floor is deleted'}, status=400)
+
+    room.is_deleted = False
+    room.save()
+
+    return redirect('sysadmin')
+
+

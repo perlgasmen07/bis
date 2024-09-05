@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ building.shortname }} Details</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/buildingDetail.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="left-menu">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            {% if user.role_id == 3 %}
+                <li><a href="#">About</a></li>
+            {% elif user.role_id == 2 %}
+                <li><a href="{% url 'generate_building_report' %}">Generate Report</a></li>
+            {% else %}
+
+            {% endif %}
+        </ul>       
+        <ul class="right-menu">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">{{ request.user.first_name }} [{{ request.user.role }}]</a>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'sign_out' %}">Sign out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div class="cover">
+        <div class="container">
+            <h1>{{ building.shortname }} Details</h1>
+        
+            <h2>Attributes</h2>
+                {% for attribute in building.attributes %}
+                <div class="attribute">
+                    <h4>{{ attribute.attribute__shortname }}: </h4>
+                    <div class="data">{{ attribute.value }}</div>
+                </div>
+                {% endfor %}
+    
+            <h2>Properties</h2>
+            <ul>
+                {% for attribute in building.attributes %}
+                    {% if attribute.property_data %}
+                    <div class="property">
+                        <h4>{{ attribute.attribute__shortname }}: </h4>
+                        <div class="data">{{ attribute.property_data }}</div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+    
+            <a href="{% url 'update_building' building.id %}" class="btn">Update Attributes & Properties</a>
+            <a href="{% url 'home' %}">Cancel</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Report</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/report.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="left-menu">
+            <li><a href="{% url 'sysadmin' %}">Home</a></li>
+            {% if user.role_id == 3 %}
+                <li><a href="#">About</a></li>
+            {% elif user.role_id == 2 %}
+                <li><a href="{% url 'generate_building_report' %}">Generate Report</a></li>
+            {% else %}
+
+            {% endif %}
+        </ul>       
+        <ul class="right-menu">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">{{ request.user.first_name }} [{{request.user.role}}]</a>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'sign_out' %}">Sign out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div class="cover">
+        <div class="container">
+            <h1>Building Report</h1>
+
+            <table border="1" cellpadding="5" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Building Name</th>
+                        <th>Attributes</th>
+                        <th>Properties</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for building in report_data %}
+                    <tr>
+                        <td>{{ building.shortname }}</td>
+                        <td>
+                            <ul>
+                                {% for attr in building.attributes %}
+                                    <li>{{ attr.attribute__shortname }}: {{ attr.value }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                {% for attr in building.attributes %}
+                                    {% if attr.property_data %}
+                                        <li>{{ attr.attribute__shortname }}:</li>
+                                        <ul>
+                                            {% for key, value in attr.property_data.items %}
+                                                <li>{{ key }}: {{ value }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <a href="{% url 'export_building_report_csv' %}" class="btn btn-primary">Export as CSV</a>
+            <a href="{% url 'export_building_report_excel' %}" class="btn btn-success">Export as Excel</a>
+        </div>
+    </div>
+</body>
+</html>

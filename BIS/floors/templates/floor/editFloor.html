@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Floor</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/floor.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="left-menu">
+            <li><a href="{% url 'sysadmin' %}">Home</a></li>
+            {% if user.role_id == 3 %}
+                <li><a href="#">About</a></li>
+            {% elif user.role_id == 2 %}
+                <li><a href="{% url 'generate_building_report' %}">Generate Report</a></li>
+            {% else %}
+
+            {% endif %}
+        </ul>       
+        <ul class="right-menu">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">{{ request.user.first_name }} [{{request.user.role}}]</a>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'sign_out' %}">Sign out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div class="cover">
+        <div class="form-container">
+            <h1>Edit Floor</h1>
+            <form action="" method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Save Changes">
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

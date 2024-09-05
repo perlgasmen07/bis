@@ -4,15 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Attribute</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/attribute.css' %}">
+    <script>
+        function toggleValueField() {
+            var typeField = document.getElementById("id_type");
+            var valueField = document.getElementById("id_value"); 
+            if (typeField.value === "static") {
+                valueField.style.display = "block";
+            } else {
+                valueField.style.display = "none";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            toggleValueField();
+            document.getElementById("id_type").addEventListener("change", toggleValueField);
+        });
+    </script>
 </head>
 <body>
-    {% block content %}
-    <form action="" method="POST">
-        {%csrf_token%}
+    <nav class="navbar">
+        <ul class="left-menu">
+            <li><a href="{% url 'sysadmin' %}">Home</a></li>
+            {% if user.role_id == 3 %}
+                <li><a href="#">About</a></li>
+            {% elif user.role_id == 2 %}
+                <li><a href="{% url 'generate_building_report' %}">Generate Report</a></li>
+            {% else %}
+            {% endif %}
+        </ul>       
+        <ul class="right-menu">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">{{ request.user.first_name }} [{{request.user.role}}]</a>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'sign_out' %}">Sign out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
 
-        {{addAttributesForm.as_p}}
-        <input type="submit" value="Add Flight">
-    </form>
+    <div class="cover">
+        <div class="form-container">
+            <h2>Add Attribute</h2>
+            <form action="" method="POST">
+                {% csrf_token %}
+        
+                {{ addAttributesForm.as_p }}
+                {{ addBuildingAttributeForm.as_p }}
+                <input type="submit" value="Add Flight">
+            </form>
+        </div>
+    </div>
+    {% block content %}
+
     {% endblock content %}
 </body>
 </html>

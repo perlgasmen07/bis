@@ -6,32 +6,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <script src="https://accounts.google.com/gsi/client" async></script>
-    <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="{% static 'js/home.js' %}" defer></script> <!-- Include your JS file -->
 </head>
 <body>
+    <nav class="navbar">
+        <ul class="left-menu">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            {% if user.role_id == 3 %}
+                <li><a href="#">About</a></li>
+            {% elif user.role_id == 2 %}
+                <li><a href="{% url 'generate_building_report' %}">Generate Report</a></li>
+            {% else %}
+            {% endif %}
+        </ul>       
+        <ul class="right-menu">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">{{ request.user.first_name }} [{{ request.user.role }}]</a>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'sign_out' %}">Sign out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
     <div class="cover">
         <div class="cover-container">
             <div class="container">
-                {% if request.user.is_authenticated %}
                 <div>
-                    <p>Welcome {{ request.user.first_name }} 🙂</p>
-                    <p>Your email is {{ request.user.email }}</p>
-                    <p>Click here to <a href="{% url 'sign_out' %}">Sign out</a></p>
+                    <label for="college-dropdown">Select College:</label>
+                    <select id="college-dropdown">
+                        <option value="">--Select a College--</option>
+                        {% for college in colleges %}
+                            <option value="{{ college.id }}">{{ college.shortname }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-                {% endif %}
-            </div>
-            <div class="container"> 
-                {% for user in users %}
-                    {% if user.role_id == 1 %}
-                        <li>{{ user.role }} {{ user.first_name }}</li>
-                    {% endif %}
-                    {% if user.role_id == 2 %}
-                        <li>{{ user.role }} {{ user.first_name }}</li>
-                    {% endif %}
-                    {% if user.role_id == 3 %}
-                        <li>{{ user.role }} {{ user.first_name }}</li>
-                    {% endif %}
-                {% endfor %}
+                <div id="building-list">
+                    <h3>Buildings</h3>
+                    <!-- Buildings will be loaded here -->
+                </div>
             </div>
         </div>
     </div>

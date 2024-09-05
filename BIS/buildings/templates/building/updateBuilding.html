@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Building</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/buildingDetail.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="left-menu">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            {% if user.role_id == 3 %}
+                <li><a href="#">About</a></li>
+            {% elif user.role_id == 2 %}
+                <li><a href="{% url 'generate_building_report' %}">Generate Report</a></li>
+            {% else %}
+
+            {% endif %}
+        </ul>       
+        <ul class="right-menu">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">{{ request.user.first_name }} [{{ request.user.role }}]</a>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'sign_out' %}">Sign out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div class="cover">
+        <div class="container">
+ 
+            <h1>Update Building: {{ building.shortname }}</h1>
+            <form method="post">
+                {% csrf_token %}
+                
+                <h2>Attributes</h2>
+                {% for form in attribute_forms %}
+                    <div>
+                        <h4>{{ form.instance.attribute.shortname }}</h4>
+                        {{ form.as_p }}
+                    </div>
+                {% endfor %}
+
+                <h2>Properties</h2>
+                {% for form in property_forms %}
+                    <div>
+                        <h4>{{ form.instance.attribute.shortname }}</h4>
+                        {{ form.as_p }}
+
+                        <!-- Dynamic Keys for JSON Data -->
+                        <div id="dynamic-keys-{{ form.instance.id }}">
+                            {% for key, value in form.instance.data.items %}
+                                <div class="key-value-pair">
+                                    <input type="text" name="new_keys_{{ form.instance.id }}[]" value="{{ key }}" readonly>
+                                    <input type="text" name="new_values_{{ form.instance.id }}[]" value="{{ value }}">
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                    </div>
+                {% endfor %}
+
+                <br><br>
+                <button type="submit">Update Building</button>           
+                <a href="{% url 'home' %}">Cancel</a>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Function to add a new key-value pair
+            $('.add-key-button').on('click', function() {
+                var propertyId = $(this).data('property-id');
+                var $container = $('#dynamic-keys-' + propertyId);
+                var $newDiv = $('<div>').addClass('key-value-pair');
+
+                var $keyInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_keys_' + propertyId + '[]')
+                    .val('');
+                $newDiv.append($keyInput);
+
+                var $valueInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_values_' + propertyId + '[]')
+                    .val('');
+                $newDiv.append($valueInput);
+
+                var $removeButton = $('<button>')
+                    .attr('type', 'button')
+                    .text('Remove')
+                    .on('click', function() {
+                        $newDiv.remove();
+                    });
+                $newDiv.append($removeButton);
+
+                $container.append($newDiv);
+            });
+
+            // Remove key-value pair
+            $('.remove-button').on('click', function() {
+                $(this).closest('.key-value-pair').remove();
+            });
+        });
+    </script>
+</body>
+</html>

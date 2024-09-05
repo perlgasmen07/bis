@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'BIS.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'ABIS-DEV'),
+        'NAME': os.environ.get('DB_NAME', 'ABIS'),
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'password'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
@@ -115,9 +115,14 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS=[
-    # Static files (CSS, JavaScript, Images)
-    BASE_DIR / "static"
+STATIC_ROOT = Path(BASE_DIR) / 'staticfiles'
+
+STATICFILES_DIRS = [
+    Path(BASE_DIR) / "core" / "static",
+    Path(BASE_DIR) / "colleges" / "static",
+    Path(BASE_DIR) / "buildings" / "static",
+    Path(BASE_DIR) / "floors" / "static",
+    Path(BASE_DIR) / "attributes" / "static",
 ]
 
 # Default primary key field type

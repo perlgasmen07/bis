@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Property</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/property.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="left-menu">
+            <li><a href="{% url 'sysadmin' %}">Home</a></li>
+            {% if user.role_id == 3 %}
+                <li><a href="#">About</a></li>
+            {% elif user.role_id == 2 %}
+                <li><a href="{% url 'generate_building_report' %}">Generate Report</a></li>
+            {% else %}
+            {% endif %}
+        </ul>       
+        <ul class="right-menu">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">{{ request.user.first_name }} [{{request.user.role}}]</a>
+                <ul class="dropdown-menu">
+                    <li><a href="{% url 'sign_out' %}">Sign out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="cover">
+        <div class="form-container">
+            <h2>Edit Property</h2>
+            <form action="" method="POST">
+                {% csrf_token %}
+        
+                {{ addPropertiesForm.as_p }}
+        
+                <div id="dynamic-keys">
+                    <h3>Dynamic Keys</h3>
+                </div>
+                
+                <button type="button" id="add-key-button">Add Key</button>
+        
+                <br><br>
+                <input type="submit" value="Add Property">
+            </form>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            function loadAttributes(buildingId) {
+                $.ajax({
+                    url: `/api/building/${buildingId}`,
+                    method: 'GET',
+                    success: function(response) {
+                        var attributes = response.attributes;
+                        var $attributeSelect = $('#id_attribute');
+                        $attributeSelect.empty();
+                        
+                        $.each(attributes, function(index, attribute) {
+                            if (attribute['attribute__type'] === 'dynamic') {
+                                var option = new Option(attribute['attribute__shortname'], attribute['attribute__id']);
+                                $attributeSelect.append(option);
+                            }
+                        });
+
+                        $attributeSelect.trigger('change');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching attributes:', status, error);
+                    }
+                });
+            }
+
+    
+            function loadKeyOptions(attributeId) {
+                $.ajax({
+                    url: `/api/attribute/${attributeId}`,
+                    success: function(response) {
+                        var properties = response.properties;
+                        $('#dynamic-keys').empty();
+                        $.each(properties, function(key, value) {
+                            addKey(key, value);
+                        });
+                    }
+                });
+            }
+    
+            function newKey(key = '', value = '') {
+                var $container = $('#dynamic-keys');
+                var $newDiv = $('<div>').addClass('key-value-pair');
+    
+                var $keyInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_keys[]')
+                    .val(key)
+                    .attr('readonly', false);
+                $newDiv.append($keyInput);
+    
+                var $valueInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_values[]')
+                    .val(value);
+                $newDiv.append($valueInput);
+    
+                var $removeButton = $('<button>')
+                    .attr('type', 'button')
+                    .text('Remove')
+                    .on('click', function() {
+                        $newDiv.remove();
+                    });
+                $newDiv.append($removeButton);
+    
+                $container.append($newDiv);
+            }
+    
+            function addKey(key = '', value = '') {
+                var $container = $('#dynamic-keys');
+                var $newDiv = $('<div>').addClass('key-value-pair');
+    
+                var $keyInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_keys[]')
+                    .val(key)
+                    .attr('readonly', false);
+                $newDiv.append($keyInput);
+    
+                var $valueInput = $('<input>')
+                    .attr('type', 'text')
+                    .attr('name', 'new_values[]')
+                    .val(value);
+                $newDiv.append($valueInput);
+    
+                var $removeButton = $('<button>')
+                    .attr('type', 'button')
+                    .text('Remove')
+                    .on('click', function() {
+                        $newDiv.remove();
+                    });
+                $newDiv.append($removeButton);
+    
+                $container.append($newDiv);
+            }
+
+            $('#id_building').on('change', function() {
+                var buildingId = $(this).val();
+                if (buildingId) {
+                    loadAttributes(buildingId);
+                }
+            });
+    
+            $('#id_attribute').on('change', function() {
+                var attributeId = $(this).val();
+                if (attributeId) {
+                    loadKeyOptions(attributeId);
+                }
+            });
+
+            $('#add-key-button').on('click', function() {
+                newKey();  // Add empty key-value pair
+            });
+
+            var initialBuildingId = $('#id_building').val();
+            if (initialBuildingId) {
+                loadAttributes(initialBuildingId);
+            }
+        });
+    </script>
+</body>
+</html>

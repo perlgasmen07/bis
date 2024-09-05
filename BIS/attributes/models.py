@@ -6,7 +6,7 @@ from buildings.models import Building
 class Attribute(models.Model):
     TYPE_CHOICES=[
         ('static', 'Static'),
-        ('dyanmic', 'Dynamic'),
+        ('dynamic', 'Dynamic'),
     ]
     shortname = models.CharField()
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, null=True, blank=True)
@@ -14,7 +14,7 @@ class Attribute(models.Model):
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_deleted = models.BooleanField()
+    is_deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
     if(type == 'static'):
         def __str__(self):
@@ -54,6 +54,8 @@ class Property(models.Model):
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='+')
 
     def __str__(self):
         return f'{self.building.shortname} - {self.attribute.shortname}'

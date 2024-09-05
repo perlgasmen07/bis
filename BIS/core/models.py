@@ -32,7 +32,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     role = models.ForeignKey('Role', on_delete=models.SET_NULL, null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(null=True, blank=True)
-    password = models.CharField(max_length=128, default='temporary_password')  # Temporary default value
 
     objects = UserManager()
 
